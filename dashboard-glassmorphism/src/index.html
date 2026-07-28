@@ -1,185 +1,91 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="utf-8">
-  <!-- Responsive Coding Created By Shift Media Solutions| https://shiftmediaegy.blogspot.com -->
-  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Dashboard Glassmorphism Shift Media Solutions">
-  <meta name="author" content="Shift Media">
-  <title>Dashboard Glassmorphism Shift Media Solutions</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <meta name="description" content="ClearPath Automation Console — private multi-channel education publisher">
+  <title>ClearPath Automation Console</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" type="text/css" href="style.css">
-  <style>
-
-  </style>
 </head>
-
 <body>
-  <main class="container">
+  <main class="container" id="app">
     <div class="menu">
       <div class="avatar">
         <span class="thumb" aria-hidden="true">CP</span>
         <span class="name">ClearPath</span>
       </div>
-      <nav class="primary">
-        <a href="#" class="menu-item active">
-          <span class="iconoir-report-columns"></span>
-          <span class="desc">Dashboard</span>
+      <nav class="primary" id="main-nav">
+        <a href="#" class="menu-item active" data-view="publish">
+          <span class="nav-ico">▸</span>
+          <span class="desc">Publish</span>
         </a>
-        <a href="#" class="menu-item">
-          <span class="iconoir-google-docs"></span>
-          <span class="desc">Reports</span>
+        <a href="#" class="menu-item" data-view="queue">
+          <span class="nav-ico">☰</span>
+          <span class="desc">Queue</span>
         </a>
-        <a href="#" class="menu-item">
-          <span class="iconoir-table"></span>
-          <span class="desc">Stats</span>
+        <a href="#" class="menu-item" data-view="channels">
+          <span class="nav-ico">◎</span>
+          <span class="desc">Channels</span>
         </a>
-        <a href="#" class="menu-item">
-          <span class="iconoir-bag"></span>
-          <span class="desc">Cart</span>
+        <a href="#" class="menu-item" data-view="discovery">
+          <span class="nav-ico">⌕</span>
+          <span class="desc">Discovery</span>
         </a>
-        <a href="#" class="menu-item">
-          <span class="iconoir-user"></span>
-          <span class="desc">Clients</span>
-        </a>
-        <a href="#" class="menu-item">
-          <span class="iconoir-leaderboard"></span>
-          <span class="desc">Analytics</span>
-        </a>
-        <a href="#" class="menu-item">
-          <span class="iconoir-settings"></span>
-          <span class="desc">Settings</span>
+        <a href="#" class="menu-item" data-view="mission">
+          <span class="nav-ico">◆</span>
+          <span class="desc">Mission</span>
         </a>
       </nav>
-      <span class="expander iconoir-arrow-right"></span>
+      <span class="expander" aria-hidden="true">»</span>
     </div>
+
     <div class="topbar">
-      <h1 class="current">Dashboard</h1>
+      <h1 class="current">Publish</h1>
       <span class="search">
-        <label><span class="iconoir-search"></span></label>
-        <input class="bar" type="text" placeholder="Search..." />
+        <label for="queue-filter">⌕</label>
+        <input id="queue-filter" class="bar" type="text" placeholder="Filter queue..." />
       </span>
       <nav>
-        <a href="#" class="menu-item">Orders</a>
-        <a href="#" class="menu-item">Clients</a>
-        <a href="#" class="menu-item">Sections</a>
-        <a href="#" class="menu-item">Products</a>
+        <a class="menu-item" href="https://clearpathtrader.com" target="_blank" rel="noreferrer">Site</a>
+        <a class="menu-item" href="https://github.com/clearpathcharts/MARKETINGDEPT" target="_blank" rel="noreferrer">Repo</a>
       </nav>
     </div>
-    <div class="dashboard">
-      <div class="cardcolumn">
-        <div class="card">
-          <header>
-            <a class="title" href="#"></a>
-            <span class="iconoir-more-vert"></span>
-          </header>
-          <div class="content"></div>
-          <div class="meta">
-            <span class="iconoir-pin"></span>
-            <span class="iconoir-eye-off"></span>
-            <span class="iconoir-share-ios"></span>
-          </div>
-        </div>
-        <div class="card">
-          <header>
-            <a class="title" href="#"></a>
-            <span class="iconoir-more-vert"></span>
-          </header>
-          <div class="content"></div>
-          <div class="meta">
-            <span class="iconoir-pin"></span>
-            <span class="iconoir-eye-off"></span>
-            <span class="iconoir-share-ios"></span>
-          </div>
-        </div>
-      </div>
-      <div class="cardcolumn">
-        <div class="card">
-          <header>
-            <a class="title" href="#"></a>
-            <span class="iconoir-more-vert"></span>
-          </header>
-          <div class="content"></div>
-          <div class="meta">
-            <span class="iconoir-pin"></span>
-            <span class="iconoir-eye-off"></span>
-            <span class="iconoir-share-ios"></span>
-          </div>
-        </div>
-        <div class="card">
-          <header>
-            <a class="title" href="#"></a>
-            <span class="iconoir-more-vert"></span>
-          </header>
-          <div class="content"></div>
-          <div class="meta">
-            <span class="iconoir-pin"></span>
-            <span class="iconoir-eye-off"></span>
-            <span class="iconoir-share-ios"></span>
-          </div>
-        </div>
-      </div>
-      <div class="cardcolumn">
-        <div class="card">
-          <header>
-            <a class="title" href="#"></a>
-            <span class="iconoir-more-vert"></span>
-          </header>
-          <div class="content"></div>
-          <div class="meta">
-            <span class="iconoir-pin"></span>
-            <span class="iconoir-eye-off"></span>
-            <span class="iconoir-share-ios"></span>
-          </div>
-        </div>
-        <div class="card">
-          <header>
-            <a class="title" href="#"></a>
-            <span class="iconoir-more-vert"></span>
-          </header>
-          <div class="content"></div>
-          <div class="meta">
-            <span class="iconoir-pin"></span>
-            <span class="iconoir-eye-off"></span>
-            <span class="iconoir-share-ios"></span>
-          </div>
-        </div>
-      </div>
+
+    <div class="dashboard" id="view-root">
+      <!-- views injected by script -->
     </div>
-    <div class="side">
-      <div class="card weather">
-        <div class="content"></div>
-        <div class="meta">
-          <span class="location">
-            <span class="iconoir-pin-alt"></span>
-            Alexandria, EGY
-          </span>
-          <div class="datetime">
-            <span class="iconoir-calendar"></span>
-            <span class="date">21 July, 2022</span>
-            <span class="time">5:01</span>
-          </div>
+
+    <aside class="side">
+      <div class="card status-card">
+        <header>Ops status</header>
+        <div class="content status-grid">
+          <div><span class="label">Queued</span><strong id="stat-queued">0</strong></div>
+          <div><span class="label">Ready</span><strong id="stat-ready">0</strong></div>
+          <div><span class="label">Channels on</span><strong id="stat-channels">0</strong></div>
+        </div>
+        <p class="hint">Live sends need Cursor + Zapier confirmation. This console queues and packages.</p>
+      </div>
+      <div class="card">
+        <header>Quick actions</header>
+        <div class="content quick-actions">
+          <button type="button" id="btn-export-all" class="btn">Export all packages</button>
+          <button type="button" id="btn-clear-queue" class="btn btn-danger">Clear queue</button>
         </div>
       </div>
       <div class="card">
-        <header>Schedule</header>
-        <div class="content">
-          <ul>
-            <li>(15:30) Deliver the project to client</li>
-            <li>(18:00) Meet Mike @ White Goose</li>
-            <li>(19:30) Dinner with Mary @ Kit-Bar</li>
-            <li>(22:00) Watch the Falcons match</li>
-            <li>(23:30) Headspace Meditate</li>
-          </ul>
+        <header>Clock</header>
+        <div class="content clock-row">
+          <span id="side-date"></span>
+          <span id="side-time"></span>
         </div>
       </div>
-    </div>
+    </aside>
   </main>
+
   <div class="bg-wash" aria-hidden="true"></div>
   <script src="script.js"></script>
 </body>
-
 </html>
