@@ -7,20 +7,20 @@
 const STORAGE_KEY = "clearpath-automation-queue-v1";
 
 const CHANNELS = [
-  { id: "facebook", name: "Facebook", zapier: "Facebook Pages", status: "connected", note: "CLEAR PATH Markets Science" },
-  { id: "youtube", name: "YouTube", zapier: "youtube_upload_video", status: "connected", note: "Upload file via Cursor" },
-  { id: "whatsapp", name: "WhatsApp", zapier: "WhatsApp Business", status: "not_yet", note: "Connect Zapier WhatsApp next" },
-  { id: "instagram", name: "Instagram", zapier: "Instagram for Business", status: "connected", note: "Calm carousels preferred" },
-  { id: "wechat", name: "WeChat", zapier: "WeChat", status: "not_yet", note: "China hub when staffed" },
-  { id: "tiktok", name: "TikTok", zapier: "TikTok", status: "not_yet", note: "Calm edits only — flash risk" },
-  { id: "douyin", name: "Douyin", zapier: "Douyin", status: "not_yet", note: "China short-video hub" },
-  { id: "reddit", name: "Reddit", zapier: "reddit create_post", status: "connected", note: "ClearMarketScience — pick subreddit" },
-  { id: "snapchat", name: "Snapchat", zapier: "Snapchat", status: "not_yet", note: "Needs Zapier app + auth" },
-  { id: "linkedin", name: "LinkedIn", zapier: "linkedin share", status: "connected", note: "Education posts only" },
-  { id: "lemon8", name: "Lemon8", zapier: "Lemon8", status: "not_yet", note: "Needs Zapier app + auth" },
-  { id: "mastodon", name: "Mastodon", zapier: "Mastodon", status: "not_yet", note: "Privacy-forward ND communities" },
-  { id: "telegram", name: "Telegram", zapier: "telegram_send_message", status: "connected", note: "@clearpathtraderfreeaccount" },
-  { id: "discord", name: "Discord", zapier: "discord_send_channel_message", status: "connected", note: "Pick channel at send" },
+  { id: "facebook", name: "Facebook", engine: "ClearPath Publisher", status: "connected", note: "CLEAR PATH Markets Science page" },
+  { id: "youtube", name: "YouTube", engine: "ClearPath Publisher", status: "connected", note: "Education video uploads" },
+  { id: "whatsapp", name: "WhatsApp", engine: "ClearPath Publisher", status: "not_yet", note: "Channels & Communities" },
+  { id: "instagram", name: "Instagram", engine: "ClearPath Publisher", status: "connected", note: "Calm carousels preferred" },
+  { id: "wechat", name: "WeChat", engine: "ClearPath Publisher", status: "not_yet", note: "China hub when staffed" },
+  { id: "tiktok", name: "TikTok", engine: "ClearPath Publisher", status: "not_yet", note: "Calm edits only — flash risk" },
+  { id: "douyin", name: "Douyin", engine: "ClearPath Publisher", status: "not_yet", note: "China short-video hub" },
+  { id: "reddit", name: "Reddit", engine: "ClearPath Publisher", status: "connected", note: "ClearMarketScience" },
+  { id: "snapchat", name: "Snapchat", engine: "ClearPath Publisher", status: "not_yet", note: "Story / Spotlight education" },
+  { id: "linkedin", name: "LinkedIn", engine: "ClearPath Publisher", status: "connected", note: "Partners & thought leadership" },
+  { id: "lemon8", name: "Lemon8", engine: "ClearPath Publisher", status: "not_yet", note: "Lifestyle + education discovery" },
+  { id: "mastodon", name: "Mastodon", engine: "ClearPath Publisher", status: "not_yet", note: "Federated / privacy-first" },
+  { id: "telegram", name: "Telegram", engine: "ClearPath Publisher", status: "connected", note: "@clearpathtraderfreeaccount" },
+  { id: "discord", name: "Discord", engine: "ClearPath Publisher", status: "connected", note: "Community + announcements" },
 ];
 
 const DISCOVERY = [
@@ -135,13 +135,13 @@ function buildPackage(job) {
   job.channels.forEach((id) => {
     const ch = CHANNELS.find((c) => c.id === id);
     if (!ch) return;
-    lines.push(`- ${ch.name} → ${ch.zapier} → ${ch.note}`);
+    lines.push(`- ${ch.name} → ${ch.engine} → ${ch.note}`);
   });
   lines.push(
     "",
-    "CURSOR INSTRUCTIONS",
-    "1. Show this package to the founder and wait for approval.",
-    "2. Run Zapier write actions only after explicit confirmation.",
+    "CLEARPATH PUBLISHER INSTRUCTIONS",
+    "1. Confirm this exact package with the founder.",
+    "2. Dispatch through ClearPath Publisher only after approval.",
     "3. Report success/fail per channel.",
     "4. Never claim brokerage or post flashy ticker creatives."
   );
@@ -326,19 +326,26 @@ function renderChannels() {
   viewRoot.innerHTML = `
     <div class="cardcolumn span-all">
       <div class="card">
-        <header><span class="title">Channel map (honest status)</span></header>
+        <header><span class="title">Channel map</span></header>
         <div class="content channel-table">
+          <div class="channel-row channel-head">
+            <span>Channel</span>
+            <span>Status</span>
+            <span>Notes</span>
+          </div>
           ${CHANNELS.map(
             (ch) => `
             <div class="channel-row">
-              <strong>${ch.name}</strong>
+              <div class="channel-name">
+                <strong>${ch.name}</strong>
+                <span class="channel-engine">${ch.engine || "ClearPath Publisher"}</span>
+              </div>
               <span class="badge ${ch.status}">${ch.status.replace("_", " ")}</span>
-              <span class="hint">${ch.zapier}</span>
-              <span class="hint">${ch.note}</span>
+              <span class="channel-note">${ch.note}</span>
             </div>`
           ).join("")}
         </div>
-        <p class="hint" style="padding:0 1rem 1rem">Status from ClearPath Zapier MCP session — not fake OAuth badges.</p>
+        <p class="hint channel-foot">Connected = live pipeline ready. Not yet = queued for ClearPath Publisher wiring.</p>
       </div>
     </div>
   `;
@@ -350,15 +357,23 @@ function renderDiscovery() {
       <div class="card">
         <header><span class="title">Discovery priorities</span></header>
         <div class="content channel-table">
+          <div class="channel-row channel-head">
+            <span>Priority</span>
+            <span>Status</span>
+            <span></span>
+          </div>
           ${DISCOVERY.map(
             (d) => `
             <div class="channel-row">
-              <strong>#${d.rank} ${d.name}</strong>
+              <div class="channel-name">
+                <strong>#${d.rank} ${d.name}</strong>
+              </div>
               <span class="badge ${d.status}">${d.status.replace("_", " ")}</span>
+              <span class="channel-note"></span>
             </div>`
           ).join("")}
         </div>
-        <p class="hint" style="padding:0 1rem 1rem">Next critical opens: Google Search Console, Bing + IndexNow, then podcasts.</p>
+        <p class="hint channel-foot">Next critical opens: Google Search Console, Bing + IndexNow, then podcasts.</p>
       </div>
     </div>
   `;
@@ -435,7 +450,7 @@ function render() {
               <li>Pick channels</li>
               <li>Confirm mission checks</li>
               <li>Queue → copy package</li>
-              <li>Approve in Cursor for live Zapier send</li>
+              <li>Approve for live ClearPath Publisher send</li>
             </ol>
           </div>
         </div>

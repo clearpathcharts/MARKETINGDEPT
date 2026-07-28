@@ -914,41 +914,100 @@ main .menu .expander {
 .channel-table {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 0;
+  padding: 0 !important;
 }
 .channel-row {
   display: grid;
-  grid-template-columns: 1.2fr auto;
-  gap: 6px 12px;
-  padding: 8px 0;
-  border-bottom: 1px solid rgba(0, 210, 255, 0.12);
+  grid-template-columns: minmax(140px, 1.1fr) minmax(100px, 0.7fr) minmax(160px, 1.4fr);
+  gap: 12px 16px;
   align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(0, 210, 255, 0.12);
+  min-width: 0;
 }
-@media (min-width: 900px) {
-  .channel-row {
-    grid-template-columns: 1.2fr auto 1fr 1.2fr;
-  }
+.channel-row:last-child {
+  border-bottom: none;
+}
+.channel-head {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.55;
+  border-bottom: 1px solid rgba(0, 210, 255, 0.25);
+}
+.channel-name {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.channel-name strong {
+  font-size: 14px;
+  color: var(--c-elements);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.channel-engine {
+  font-size: 11px;
+  color: rgba(232, 247, 255, 0.55);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.channel-note {
+  font-size: 12px;
+  color: rgba(232, 247, 255, 0.7);
+  line-height: 1.35;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.channel-foot {
+  padding: 12px 16px 16px !important;
 }
 .badge {
-  font-size: 11px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  max-width: 100%;
+  font-size: 10px;
   font-weight: 700;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   border-radius: 999px;
-  padding: 0.2rem 0.55rem;
+  padding: 0.35rem 0.65rem;
   border: 1px solid transparent;
+  white-space: nowrap;
 }
 .badge.connected {
   color: var(--cp-cyan);
   border-color: rgba(0, 210, 255, 0.5);
+  background: rgba(0, 210, 255, 0.08);
   box-shadow: var(--glow-cyan);
 }
 .badge.partial {
   color: var(--cp-orange);
   border-color: rgba(255, 140, 0, 0.5);
+  background: rgba(255, 140, 0, 0.08);
 }
 .badge.not_yet {
   color: #9aa0b5;
   border-color: rgba(154, 160, 181, 0.35);
+  background: rgba(154, 160, 181, 0.06);
+}
+@media (max-width: 899px) {
+  .channel-row {
+    grid-template-columns: 1fr auto;
+  }
+  .channel-note {
+    grid-column: 1 / -1;
+  }
+  .channel-head span:last-child {
+    display: none;
+  }
 }
 main .dashboard .cardcolumn.span-2 {
   grid-column: span 1;
@@ -967,5 +1026,14 @@ main .dashboard .card header .title {
 }
 main .dashboard {
   align-content: start;
+  overflow: auto;
+}
+main .dashboard .cardcolumn.span-all .card {
+  max-height: calc(100vh - 8rem);
+  overflow: hidden;
+}
+main .dashboard .cardcolumn.span-all .channel-table {
+  overflow: auto;
+  max-height: calc(100vh - 14rem);
 }
 
