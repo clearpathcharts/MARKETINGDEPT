@@ -10,6 +10,10 @@ import {
   AlertTriangle,
   Youtube,
   MessageCircle,
+  Share2,
+  Facebook,
+  Instagram,
+  Linkedin,
 } from "lucide-react";
 import {
   PUBLISH_CHANNELS,
@@ -22,15 +26,30 @@ import {
   type PublishJob,
 } from "../lib/publishing";
 
-function DiscordIcon({ className }: { className?: string }) {
-  return <MessageCircle className={className} />;
-}
-
 const CHANNEL_ICONS: Record<PublishChannelId, React.ReactNode> = {
+  facebook: <Facebook className="h-4 w-4" />,
   youtube: <Youtube className="h-4 w-4" />,
+  whatsapp: <MessageCircle className="h-4 w-4" />,
+  instagram: <Instagram className="h-4 w-4" />,
+  wechat: <MessageCircle className="h-4 w-4" />,
+  tiktok: <Share2 className="h-4 w-4" />,
+  douyin: <Share2 className="h-4 w-4" />,
+  reddit: <Share2 className="h-4 w-4" />,
+  snapchat: <Share2 className="h-4 w-4" />,
+  linkedin: <Linkedin className="h-4 w-4" />,
+  lemon8: <Share2 className="h-4 w-4" />,
+  mastodon: <Share2 className="h-4 w-4" />,
   telegram: <Send className="h-4 w-4" />,
-  discord: <DiscordIcon className="h-4 w-4" />,
+  discord: <MessageCircle className="h-4 w-4" />,
 };
+
+const DEFAULT_CHANNELS: PublishChannelId[] = [
+  "facebook",
+  "youtube",
+  "instagram",
+  "linkedin",
+  "reddit",
+];
 
 export function Publishing() {
   const [queue, setQueue] = useState<PublishJob[]>([]);
@@ -39,11 +58,7 @@ export function Publishing() {
   const [videoUrl, setVideoUrl] = useState("");
   const [videoFileName, setVideoFileName] = useState("");
   const [scheduledFor, setScheduledFor] = useState("");
-  const [channels, setChannels] = useState<PublishChannelId[]>([
-    "youtube",
-    "telegram",
-    "discord",
-  ]);
+  const [channels, setChannels] = useState<PublishChannelId[]>(DEFAULT_CHANNELS);
   const [calmConfirmed, setCalmConfirmed] = useState(false);
   const [educationOnlyConfirmed, setEducationOnlyConfirmed] = useState(false);
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
@@ -83,7 +98,7 @@ export function Publishing() {
     setScheduledFor("");
     setCalmConfirmed(false);
     setEducationOnlyConfirmed(false);
-    setChannels(["youtube", "telegram", "discord"]);
+    setChannels([...DEFAULT_CHANNELS]);
   };
 
   const queueJob = () => {
@@ -247,7 +262,7 @@ export function Publishing() {
                           {ch.name}
                         </div>
                         <p className="text-[10px] font-code opacity-80 leading-relaxed">
-                          {ch.capability}
+                          {ch.status === "connected" ? "Connected" : ch.status === "partial" ? "Partial" : "Not yet"} · {ch.capability}
                         </p>
                       </button>
                     );

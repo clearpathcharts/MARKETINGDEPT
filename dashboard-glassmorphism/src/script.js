@@ -7,12 +7,20 @@
 const STORAGE_KEY = "clearpath-automation-queue-v1";
 
 const CHANNELS = [
+  { id: "facebook", name: "Facebook", zapier: "Facebook Pages", status: "connected", note: "CLEAR PATH Markets Science" },
   { id: "youtube", name: "YouTube", zapier: "youtube_upload_video", status: "connected", note: "Upload file via Cursor" },
+  { id: "whatsapp", name: "WhatsApp", zapier: "WhatsApp Business", status: "not_yet", note: "Connect Zapier WhatsApp next" },
+  { id: "instagram", name: "Instagram", zapier: "Instagram for Business", status: "connected", note: "Calm carousels preferred" },
+  { id: "wechat", name: "WeChat", zapier: "WeChat", status: "not_yet", note: "China hub when staffed" },
+  { id: "tiktok", name: "TikTok", zapier: "TikTok", status: "not_yet", note: "Calm edits only — flash risk" },
+  { id: "douyin", name: "Douyin", zapier: "Douyin", status: "not_yet", note: "China short-video hub" },
+  { id: "reddit", name: "Reddit", zapier: "reddit create_post", status: "connected", note: "ClearMarketScience — pick subreddit" },
+  { id: "snapchat", name: "Snapchat", zapier: "Snapchat", status: "not_yet", note: "Needs Zapier app + auth" },
+  { id: "linkedin", name: "LinkedIn", zapier: "linkedin share", status: "connected", note: "Education posts only" },
+  { id: "lemon8", name: "Lemon8", zapier: "Lemon8", status: "not_yet", note: "Needs Zapier app + auth" },
+  { id: "mastodon", name: "Mastodon", zapier: "Mastodon", status: "not_yet", note: "Privacy-forward ND communities" },
   { id: "telegram", name: "Telegram", zapier: "telegram_send_message", status: "connected", note: "@clearpathtraderfreeaccount" },
   { id: "discord", name: "Discord", zapier: "discord_send_channel_message", status: "connected", note: "Pick channel at send" },
-  { id: "facebook", name: "Facebook", zapier: "facebook page post", status: "connected", note: "CLEAR PATH Markets Science" },
-  { id: "linkedin", name: "LinkedIn", zapier: "linkedin share", status: "connected", note: "Education posts only" },
-  { id: "reddit", name: "Reddit", zapier: "reddit create_post", status: "partial", note: "Needs subreddit + auth" },
 ];
 
 const DISCOVERY = [
@@ -36,7 +44,7 @@ const queueFilter = document.getElementById("queue-filter");
 
 let view = "publish";
 let queue = loadQueue();
-let selectedChannels = ["youtube", "telegram", "discord"];
+let selectedChannels = ["facebook", "youtube", "instagram", "linkedin", "reddit"];
 
 document.addEventListener("touchstart", () => {}, true);
 
