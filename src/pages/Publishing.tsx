@@ -401,10 +401,9 @@ export function Publishing() {
 
       <Card className="bg-cyber-bg-darker/40 border-cyber-border">
         <CardContent className="p-4 font-code text-xs text-cyber-text-muted leading-relaxed">
-          Phase 1: your private Buffer UI + local queue. Phase 2 (next): Cursor executes Zapier
-          writes (YouTube upload, Telegram @clearpathtraderfreeaccount, Discord channel) only after
-          you paste a package and approve. Phase 3: direct APIs so MYEYES posts without the copy
-          step.
+          Phase 1: ClearPath Publisher UI + local queue. Phase 2: dispatch live to selected
+          channels after founder approval. Phase 3: direct platform APIs so MYEYES posts
+          without the copy step.
         </CardContent>
       </Card>
     </div>
