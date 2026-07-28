@@ -322,33 +322,147 @@ function renderQueue() {
   });
 }
 
-function renderChannels() {
-  viewRoot.innerHTML = `
-    <div class="cardcolumn span-all">
-      <div class="card">
-        <header><span class="title">Channel map</span></header>
-        <div class="content channel-table">
-          <div class="channel-row channel-head">
-            <span>Channel</span>
-            <span>Status</span>
-            <span>Notes</span>
-          </div>
-          ${CHANNELS.map(
+function renderChannelGroup(title, items) {
+  if (!items.length) return "";
+  return `
+    <div class="card channel-group">
+      <header><span class="title">${title}</span><span class="count-pill">${items.length}</span></header>
+      <div class="content channel-stack">
+        ${items
+          .map(
             (ch) => `
-            <div class="channel-row">
-              <div class="channel-name">
-                <strong>${ch.name}</strong>
-                <span class="channel-engine">${ch.engine || "ClearPath Publisher"}</span>
-              </div>
+          <div class="channel-card">
+            <div class="channel-card-top">
+              <strong class="channel-card-name">${ch.name}</strong>
               <span class="badge ${ch.status}">${ch.status.replace("_", " ")}</span>
-              <span class="channel-note">${ch.note}</span>
-            </div>`
-          ).join("")}
-        </div>
-        <p class="hint channel-foot">Connected = live pipeline ready. Not yet = queued for ClearPath Publisher wiring.</p>
+            </div>
+            <p class="channel-card-engine">${ch.engine || "ClearPath Publisher"}</p>
+            <p class="channel-card-note">${ch.note}</p>
+          </div>`
+          )
+          .join("")}
       </div>
     </div>
   `;
+}
+
+function renderChannels() {
+  const live = CHANNELS.filter((ch) => ch.status === "connected");
+  const pending = CHANNELS.filter((ch) => ch.status !== "connected");
+  viewRoot.innerHTML = `
+    <div class="cardcolumn span-all channels-wrap">
+      ${renderChannelGroup("Connected", live)}
+      ${renderChannelGroup("Not yet — separate wiring", pending)}
+      <p class="hint channel-foot">Connected = live pipeline ready. Not yet = WhatsApp, WeChat, TikTok, Douyin, Snapchat, Lemon8, Mastodon and any other pending channel.</p>
+    </div>
+  `;
+}
+
+function renderAnalytics() {
+  const live = CHANNELS.filter((ch) => ch.status === "connected");
+  const pending = CHANNELS.filter((ch) => ch.status !== "connected");
+  viewRoot.innerHTML = `
+    <div class="cardcolumn span-all">
+      <div class="card">
+        <header><span class="title">Site & channel analytics</span></header>
+        <div class="content analytics-grid">
+          <div class="analytics-stat">
+            <span class="label">Live channels</span>
+            <strong>${live.length}</strong>
+            <p class="hint">${live.map((c) => c.name).join(", ") || "None"}</p>
+          </div>
+          <div class="analytics-stat">
+            <span class="label">Not yet</span>
+            <strong>${pending.length}</strong>
+            <p class="hint">${pending.map((c) => c.name).join(", ") || "None"}</p>
+          </div>
+          <div class="analytics-stat">
+            <span class="label">Queued posts</span>
+            <strong>${queue.filter((j) => j.status === "queued").length}</strong>
+            <p class="hint">Waiting in local publisher queue</p>
+          </div>
+          <div class="analytics-stat">
+            <span class="label">Ready packages</span>
+            <strong>${queue.filter((j) => j.status === "ready").length}</strong>
+            <p class="hint">Copied for ClearPath Publisher dispatch</p>
+          </div>
+        </div>
+        <p class="hint channel-foot">No fake traffic numbers. These counts come from this console only until live analytics are wired.</p>
+      </div>
+    </div>
+  `;
+}
+
+function renderSeo() {
+  viewRoot.innerHTML = `
+    <div class="cardcolumn span-all">
+      <div class="card">
+        <header><span class="title">SEO automation — video release prompts</span></header>
+        <div class="content composer">
+          <label>Video topic
+            <input id="seo-topic" type="text" placeholder="e.g. Reading support without flashing tickers" />
+          </label>
+          <label>Target sector
+            <select id="seo-sector">
+              <option value="data centers">Data centers</option>
+              <option value="AI infrastructure">AI infrastructure</option>
+              <option value="B2B technology">B2B technology</option>
+              <option value="cybersecurity">Cybersecurity</option>
+              <option value="veteran education">Veteran education</option>
+              <option value="neurodivergent learning">Neurodivergent learning</option>
+            </select>
+          </label>
+          <label>Primary keyword
+            <input id="seo-keyword" type="text" placeholder="e.g. accessible trading education" />
+          </label>
+          <button type="button" class="btn btn-primary" id="btn-seo-gen">Generate ranking prompts</button>
+          <pre class="pkg" id="seo-output">Generate prompts for titles, descriptions, chapters, and channel-specific captions.</pre>
+        </div>
+      </div>
+    </div>
+  `;
+  document.getElementById("btn-seo-gen").addEventListener("click", () => {
+    const topic = document.getElementById("seo-topic").value.trim() || "Calm market education";
+    const sector = document.getElementById("seo-sector").value;
+    const keyword = document.getElementById("seo-keyword").value.trim() || topic.toLowerCase();
+    const output = `CLEARPATH SEO VIDEO PROMPT PACK
+Topic: ${topic}
+Sector: ${sector}
+Primary keyword: ${keyword}
+
+YOUTUBE TITLE OPTIONS
+1. ${topic}: a calm guide for ${sector}
+2. ${keyword} without ticker overload
+3. ClearPath education — ${topic}
+
+YOUTUBE DESCRIPTION
+${topic} explained in plain language for veterans and neurodivergent learners.
+Focus sector: ${sector}.
+Keyword focus: ${keyword}.
+No flashing charts. No brokerage pitch.
+Learn more: https://clearpathtrader.com
+
+CHAPTER PROMPT
+0:00 Why calm market education matters
+1:00 Core idea — ${topic}
+3:00 How to read this without sensory overload
+5:00 Practical takeaway for ${sector}
+6:30 Next lesson + encyclopedia link
+
+SHORT CAPTIONS
+Facebook/LinkedIn: ${topic} — plain-language ${sector} education. Not a brokerage.
+Instagram: Calm charts. Clear words. ${keyword}.
+Reddit: Discussion: how do you learn ${keyword} without noisy terminals?
+TikTok/Douyin/Lemon8: Only if edit stays static + caption-led. Topic: ${topic}.
+WhatsApp/WeChat: New ClearPath lesson — ${topic}. https://clearpathtrader.com
+
+RANKING RULES
+- Put primary keyword in first 50 characters of title
+- Repeat keyword once in first 2 description lines
+- Link to encyclopedia / learn pages
+- No fake urgency, no broker CTAs`;
+    document.getElementById("seo-output").textContent = output;
+  });
 }
 
 function renderDiscovery() {
@@ -467,6 +581,8 @@ function render() {
   }
   if (view === "queue") return renderQueue();
   if (view === "channels") return renderChannels();
+  if (view === "analytics") return renderAnalytics();
+  if (view === "seo") return renderSeo();
   if (view === "discovery") return renderDiscovery();
   if (view === "mission") return renderMission();
 }
