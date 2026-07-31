@@ -5,6 +5,7 @@ import {
   Clock,
   Copy,
   Film,
+  Hash,
   Send,
   Trash2,
   AlertTriangle,
@@ -25,6 +26,12 @@ import {
   type PublishChannelId,
   type PublishJob,
 } from "../lib/publishing";
+import {
+  COMMUNITY_HASHTAG_GROUPS,
+  formatCommunityHashtagCatalog,
+  generateHashtagPack,
+  HASHTAG_SECTORS,
+} from "../lib/hashtags";
 
 const CHANNEL_ICONS: Record<PublishChannelId, React.ReactNode> = {
   facebook: <Facebook className="h-4 w-4" />,
@@ -63,6 +70,11 @@ export function Publishing() {
   const [educationOnlyConfirmed, setEducationOnlyConfirmed] = useState(false);
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
   const [copyNote, setCopyNote] = useState("");
+  const [hashTopic, setHashTopic] = useState("");
+  const [hashSector, setHashSector] = useState<string>(HASHTAG_SECTORS[0]);
+  const [hashKeyword, setHashKeyword] = useState("");
+  const [hashPack, setHashPack] = useState("");
+  const [hashNote, setHashNote] = useState("");
 
   useEffect(() => {
     setQueue(loadPublishQueue());
@@ -141,6 +153,49 @@ export function Publishing() {
       markReady(job.id);
     } catch {
       setCopyNote("Clipboard blocked — package shown below; select and copy manually.");
+    }
+  };
+
+  const runHashtagGen = () => {
+    const pack = generateHashtagPack(hashTopic || title, hashSector, hashKeyword || title);
+    setHashPack(pack);
+    setHashNote("");
+  };
+
+  const copyHashtags = async () => {
+    if (!hashPack) runHashtagGen();
+    const text = hashPack || generateHashtagPack(hashTopic || title, hashSector, hashKeyword || title);
+    try {
+      await navigator.clipboard.writeText(text);
+      setHashNote("Hashtag pack copied.");
+    } catch {
+      setHashNote("Clipboard blocked — select the pack below.");
+    }
+  };
+
+  const appendHashtagsToCaption = () => {
+    const pack = hashPack || generateHashtagPack(hashTopic || title, hashSector, hashKeyword || title);
+    if (!hashPack) setHashPack(pack);
+    const coreLine = pack.split("\n").find((l) => l.startsWith("#ClearPathTrader"));
+    if (!coreLine) return;
+    setCaption((prev) => `${prev.trim()}\n\n${coreLine}`);
+  };
+
+  const copyCommunityTags = async (tags: string, label: string) => {
+    try {
+      await navigator.clipboard.writeText(tags);
+      setHashNote(`Copied: ${label}`);
+    } catch {
+      setHashNote("Clipboard blocked — select tags manually.");
+    }
+  };
+
+  const copyAllCommunityCatalog = async () => {
+    try {
+      await navigator.clipboard.writeText(formatCommunityHashtagCatalog());
+      setHashNote("Full community hashtag catalog copied.");
+    } catch {
+      setHashNote("Clipboard blocked — use Generate / Copy pack.");
     }
   };
 
@@ -398,6 +453,135 @@ export function Publishing() {
           )}
         </div>
       </div>
+
+      <Card className="bg-cyber-bg border-cyber-border">
+        <CardHeader className="border-b border-cyber-border/50 pb-4">
+          <CardTitle className="font-tech text-cyber-text tracking-wider flex items-center gap-2">
+            <Hash className="h-5 w-5 text-cyber-primary" />
+            HASHTAG GENERATOR
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-6 space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-xs font-code text-cyber-text-muted uppercase mb-2">
+                Topic
+              </label>
+              <input
+                value={hashTopic}
+                onChange={(e) => setHashTopic(e.target.value)}
+                placeholder={title || "e.g. Reading support without flashing tickers"}
+                className="w-full h-10 rounded-md border border-cyber-border bg-cyber-bg-darker px-3 text-sm font-code text-cyber-text placeholder:text-cyber-text-muted focus:border-cyber-primary focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-code text-cyber-text-muted uppercase mb-2">
+                Sector
+              </label>
+              <select
+                value={hashSector}
+                onChange={(e) => setHashSector(e.target.value)}
+                className="w-full h-10 rounded-md border border-cyber-border bg-cyber-bg-darker px-3 text-sm font-code text-cyber-text focus:border-cyber-primary focus:outline-none"
+              >
+                {HASHTAG_SECTORS.map((s) => (
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-code text-cyber-text-muted uppercase mb-2">
+                Primary keyword
+              </label>
+              <input
+                value={hashKeyword}
+                onChange={(e) => setHashKeyword(e.target.value)}
+                placeholder="e.g. accessible trading education"
+                className="w-full h-10 rounded-md border border-cyber-border bg-cyber-bg-darker px-3 text-sm font-code text-cyber-text placeholder:text-cyber-text-muted focus:border-cyber-primary focus:outline-none"
+              />
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={runHashtagGen}
+              className="px-4 py-2 rounded border border-cyber-primary/50 bg-cyber-primary/10 text-cyber-primary font-code font-bold text-sm hover:bg-cyber-primary/20"
+            >
+              Generate hashtags
+            </button>
+            <button
+              type="button"
+              onClick={copyHashtags}
+              className="px-4 py-2 rounded border border-cyber-border text-cyber-text-secondary font-code text-sm hover:bg-cyber-bg-darker flex items-center gap-2"
+            >
+              <Copy className="h-3.5 w-3.5" />
+              Copy pack
+            </button>
+            <button
+              type="button"
+              onClick={appendHashtagsToCaption}
+              className="px-4 py-2 rounded border border-cyber-border text-cyber-text-secondary font-code text-sm hover:bg-cyber-bg-darker"
+            >
+              Append core set to caption
+            </button>
+            <button
+              type="button"
+              onClick={copyAllCommunityCatalog}
+              className="px-4 py-2 rounded border border-cyber-border text-cyber-text-secondary font-code text-sm hover:bg-cyber-bg-darker"
+            >
+              Copy all community packs
+            </button>
+          </div>
+          {hashNote && (
+            <p className="font-code text-xs text-[#39FF14]">{hashNote}</p>
+          )}
+
+          <div className="space-y-5 pt-2 border-t border-cyber-border/40">
+            <p className="text-xs font-code text-cyber-text-muted uppercase tracking-wider">
+              Ready to grab — forums · Reddit · Discord · sentiment
+            </p>
+            {COMMUNITY_HASHTAG_GROUPS.map((group) => (
+              <div key={group.id} className="space-y-3">
+                <div>
+                  <p className="font-code text-sm font-bold text-cyber-primary">{group.label}</p>
+                  <p className="font-code text-[10px] text-cyber-text-muted mt-0.5">{group.note}</p>
+                </div>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
+                  {group.packs.map((pack) => (
+                    <button
+                      key={pack.name}
+                      type="button"
+                      onClick={() => copyCommunityTags(pack.tags, pack.name)}
+                      className="text-left p-3 rounded border border-cyber-border bg-cyber-bg-darker hover:border-cyber-primary/40 hover:bg-cyber-primary/5 transition-colors"
+                      title="Click to copy"
+                    >
+                      <div className="flex items-center justify-between gap-2 mb-1">
+                        <span className="font-code text-xs font-bold text-cyber-text">
+                          {pack.name}
+                        </span>
+                        <Copy className="h-3 w-3 text-cyber-text-muted shrink-0" />
+                      </div>
+                      <p className="font-code text-[10px] text-cyber-text-muted mb-2">
+                        {pack.focus}
+                      </p>
+                      <p className="font-code text-[10px] text-cyber-text-secondary leading-relaxed break-words">
+                        {pack.tags}
+                      </p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {hashPack && (
+            <pre className="text-[10px] font-code text-cyber-text-muted bg-cyber-bg-darker border border-cyber-border rounded p-3 overflow-x-auto whitespace-pre-wrap max-h-72">
+              {hashPack}
+            </pre>
+          )}
+        </CardContent>
+      </Card>
 
       <Card className="bg-cyber-bg-darker/40 border-cyber-border">
         <CardContent className="p-4 font-code text-xs text-cyber-text-muted leading-relaxed">

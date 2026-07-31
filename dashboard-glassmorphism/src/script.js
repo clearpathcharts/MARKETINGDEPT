@@ -5,6 +5,96 @@
  */
 
 const STORAGE_KEY = "clearpath-automation-queue-v1";
+const API_BASE = "http://127.0.0.1:8787";
+
+let backendOnline = false;
+let backendChannels = [];
+
+async function api(path, options = {}) {
+  const res = await fetch(`${API_BASE}${path}`, {
+    headers: { "Content-Type": "application/json" },
+    ...options,
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error ? `${body.error}${body.details ? ": " + body.details.join(", ") : ""}` : `HTTP ${res.status}`);
+  }
+  return res.json();
+}
+
+async function initBackend() {
+  const statusEl = document.getElementById("backend-status");
+  try {
+    const health = await api("/api/health");
+    backendOnline = true;
+    backendChannels = health.channels || [];
+    const direct = backendChannels.filter((c) => c.mode === "direct" && c.ready).map((c) => c.name);
+    if (statusEl) {
+      statusEl.textContent = direct.length
+        ? `Backend: ONLINE — direct send ready: ${direct.join(", ")}`
+        : "Backend: ONLINE — add credentials in clearpath-publisher/.env to enable direct sends";
+    }
+    const serverQueue = await api("/api/queue");
+    if (Array.isArray(serverQueue)) {
+      const changed = JSON.stringify(serverQueue) !== JSON.stringify(queue);
+      queue = serverQueue;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(queue));
+      updateStats();
+      // Only re-render the queue view; never clobber the composer mid-typing.
+      if (changed && view === "queue") render();
+    }
+  } catch {
+    backendOnline = false;
+    if (statusEl) {
+      statusEl.textContent = "Backend: offline — using local queue + copy-package mode. Start it: npm start in clearpath-publisher.";
+    }
+  }
+}
+
+function syncToBackend() {
+  if (!backendOnline) return;
+  api("/api/queue/sync", { method: "POST", body: JSON.stringify({ jobs: queue }) })
+    .then((serverQueue) => {
+      if (Array.isArray(serverQueue)) queue = serverQueue;
+    })
+    .catch(() => {});
+}
+
+async function dispatchNow(jobId) {
+  const job = queue.find((j) => j.id === jobId);
+  if (!job) return;
+  const directTargets = job.channels.filter((id) =>
+    backendChannels.some((c) => c.id === id && c.mode === "direct" && c.ready),
+  );
+  const bridgeTargets = job.channels.filter((id) => !directTargets.includes(id));
+  const msg = [
+    `Dispatch "${job.title}" now?`,
+    directTargets.length ? `Direct send: ${directTargets.join(", ")}` : "No direct channels ready — nothing will send.",
+    bridgeTargets.length ? `Bridge (via Cursor package): ${bridgeTargets.join(", ")}` : "",
+    "This click is your founder approval.",
+  ].filter(Boolean).join("\n");
+  if (!confirm(msg)) return;
+  try {
+    const updated = await api(`/api/queue/${jobId}/dispatch`, { method: "POST" });
+    const idx = queue.findIndex((j) => j.id === jobId);
+    if (idx >= 0) queue[idx] = updated;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(queue));
+    updateStats();
+    render();
+    const sent = (updated.results || []).filter((r) => r.ok).map((r) => r.channel);
+    const failed = (updated.results || []).filter((r) => !r.ok && !r.skipped).map((r) => `${r.channel} (${r.error})`);
+    const bridged = (updated.results || []).filter((r) => r.skipped).map((r) => r.channel);
+    alert(
+      [
+        sent.length ? `SENT: ${sent.join(", ")}` : "",
+        failed.length ? `FAILED: ${failed.join("; ")}` : "",
+        bridged.length ? `VIA CURSOR BRIDGE: ${bridged.join(", ")} — copy the package for these.` : "",
+      ].filter(Boolean).join("\n") || "No results.",
+    );
+  } catch (err) {
+    alert(`Dispatch error: ${err.message}`);
+  }
+}
 
 const CHANNELS = [
   { id: "facebook", name: "Facebook", engine: "ClearPath Publisher", status: "connected", note: "CLEAR PATH Markets Science page" },
@@ -86,6 +176,7 @@ function loadQueue() {
 function saveQueue() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(queue));
   updateStats();
+  syncToBackend();
 }
 
 function uid() {
@@ -286,8 +377,26 @@ function renderQueue() {
                 <p class="hint">${j.channels.join(" · ")} · ${j.status}${
                       j.scheduledFor ? " · " + new Date(j.scheduledFor).toLocaleString() : ""
                     }</p>
+                ${
+                  Array.isArray(j.results) && j.results.length
+                    ? `<p class="hint">${j.results
+                        .map((r) =>
+                          r.ok
+                            ? `✓ ${r.channel} sent`
+                            : r.skipped
+                            ? `→ ${r.channel} via Cursor bridge`
+                            : `✗ ${r.channel}: ${escapeHtml(String(r.error || "failed"))}`,
+                        )
+                        .join(" · ")}</p>`
+                    : ""
+                }
               </div>
               <div class="queue-actions">
+                ${
+                  backendOnline
+                    ? `<button type="button" class="btn btn-primary" data-dispatch="${j.id}">Dispatch now</button>`
+                    : ""
+                }
                 <button type="button" class="btn" data-copy="${j.id}">Copy package</button>
                 <button type="button" class="btn btn-danger" data-del="${j.id}">Remove</button>
               </div>
@@ -315,10 +424,15 @@ function renderQueue() {
   });
   viewRoot.querySelectorAll("[data-del]").forEach((btn) => {
     btn.addEventListener("click", () => {
-      queue = queue.filter((j) => j.id !== btn.dataset.del);
+      const id = btn.dataset.del;
+      queue = queue.filter((j) => j.id !== id);
       saveQueue();
+      if (backendOnline) api(`/api/queue/${id}`, { method: "DELETE" }).catch(() => {});
       render();
     });
+  });
+  viewRoot.querySelectorAll("[data-dispatch]").forEach((btn) => {
+    btn.addEventListener("click", () => dispatchNow(btn.dataset.dispatch));
   });
 }
 
@@ -456,12 +570,270 @@ Reddit: Discussion: how do you learn ${keyword} without noisy terminals?
 TikTok/Douyin/Lemon8: Only if edit stays static + caption-led. Topic: ${topic}.
 WhatsApp/WeChat: New ClearPath lesson — ${topic}. https://clearpathtrader.com
 
+HASHTAGS (see Hashtags view for full packs)
+${generateHashtags(topic, sector, keyword).split("\n").slice(0, 12).join("\n")}
+
 RANKING RULES
 - Put primary keyword in first 50 characters of title
 - Repeat keyword once in first 2 description lines
 - Link to encyclopedia / learn pages
 - No fake urgency, no broker CTAs`;
     document.getElementById("seo-output").textContent = output;
+  });
+}
+
+function slugTag(text) {
+  return String(text || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, " ")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 4)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join("");
+}
+
+function generateHashtags(topic, sector, keyword) {
+  const topicTag = slugTag(topic) || "CalmMarkets";
+  const sectorTag = slugTag(sector) || "B2BTechnology";
+  const keywordTag = slugTag(keyword) || topicTag;
+  const core = [
+    "#ClearPathTrader",
+    "#ClearPathMarketsScience",
+    "#MarketEducation",
+    "#AccessibleTrading",
+    "#NeurodivergentFriendly",
+    "#VeteranEducation",
+    "#NoTickerFlash",
+    "#FinancialLiteracy",
+    `#${topicTag}`,
+    `#${sectorTag}`,
+    `#${keywordTag}`,
+    "#NotABrokerage",
+  ];
+  const packs = {
+    Instagram: [...core, "#LearnOnInstagram", "#CalmLearning", "#EducationCarousel"].join(" "),
+    LinkedIn: [...core, "#B2B", "#ThoughtLeadership", "#DataCenters", "#Cybersecurity", "#AIInfrastructure"].join(" "),
+    Facebook: [...core, "#CommunityLearning", "#ClearPathEducation"].join(" "),
+    YouTube: [...core, "#YouTubeEducation", "#MarketExplained"].join(" "),
+    TikTok: ["#ClearPathTrader", `#${topicTag}`, `#${keywordTag}`, "#LearnOnTikTok", "#CalmFinance", "#MarketBasics"].join(" "),
+    Douyin: ["#ClearPath", `#${sectorTag}`, "#FinanceEducation", "#CalmCharts"].join(" "),
+    Lemon8: ["#ClearPathTrader", `#${topicTag}`, "#LifestyleLearning", "#CalmFocus"].join(" "),
+    Reddit: `Tags/flair ideas: ${keyword} | ${sector} | accessible education | ClearPathTrader — also use ready packs for r/stocks · r/Trading · r/wallstreetbets`,
+    Mastodon: [...core, "#A11y", "#Neurodiversity", "#FinLit"].join(" "),
+    WhatsApp: "No hashtags needed — use plain lesson link + short caption.",
+    WeChat: "Use topic keywords in caption; hashtags are limited on WeChat.",
+    Snapchat: ["#ClearPathTrader", `#${topicTag}`, "#MarketEducation"].join(" "),
+  };
+  return `CLEARPATH HASHTAG PACK
+Topic: ${topic}
+Sector: ${sector}
+Keyword: ${keyword}
+
+CORE SET
+${core.join(" ")}
+
+BY CHANNEL
+Instagram:
+${packs.Instagram}
+
+LinkedIn:
+${packs.LinkedIn}
+
+Facebook:
+${packs.Facebook}
+
+YouTube:
+${packs.YouTube}
+
+TikTok:
+${packs.TikTok}
+
+Douyin:
+${packs.Douyin}
+
+Lemon8:
+${packs.Lemon8}
+
+Reddit:
+${packs.Reddit}
+
+Mastodon:
+${packs.Mastodon}
+
+Snapchat:
+${packs.Snapchat}
+
+WhatsApp:
+${packs.WhatsApp}
+
+WeChat:
+${packs.WeChat}
+
+StockTwits:
+#StockTwits #FinTwit #MarketSentiment #ClearPathTrader #NotABrokerage
+
+eToro USA:
+#eToro #eToroUSA #SocialTrading #FinancialLiteracy #ClearPathTrader #NotABrokerage
+
+RULES
+- Max 8–12 tags on Instagram/TikTok
+- 3–5 tags on LinkedIn
+- Skip hashtags on WhatsApp
+- Never use broker/signal spam tags
+- Keep veteran + accessibility tags in every education post`;
+}
+
+const COMMUNITY_HASHTAG_GROUPS = [
+  {
+    id: "forums",
+    label: "Trading forums",
+    note: "Niche discovery tags for education posts aimed at these communities",
+    packs: [
+      { name: "BabyPips", focus: "forex-focused", tags: "#BabyPips #ForexEducation #ForexTrading #RetailForex #FXBasics #CurrencyMarkets #LearnForex #ClearPathTrader" },
+      { name: "Trade2Win", focus: "UK's largest trading forum", tags: "#Trade2Win #UKTrading #TradingForum #MarketEducation #DiscretionaryTrading #ClearPathTrader" },
+      { name: "MQL5 Community", focus: "largest forex / automated trading forum", tags: "#MQL5 #MetaTrader #AlgoTrading #ExpertAdvisors #AutomatedTrading #ForexBots #MQL4 #ClearPathTrader" },
+      { name: "SteadyOptions", focus: "options-focused", tags: "#SteadyOptions #OptionsTrading #OptionsEducation #DefinedRisk #IronCondor #OptionsStrategies #ClearPathTrader" },
+      { name: "Aussie Stock Forums", focus: "ASX / Australia", tags: "#AussieStockForums #ASX #ASXStocks #AustralianInvesting #ASXEducation #ClearPathTrader" },
+      { name: "MyPivots", focus: "day trading", tags: "#MyPivots #DayTrading #IntradayTrading #PivotPoints #PriceAction #DayTradingEducation #ClearPathTrader" },
+      { name: "NinjaTrader Community", focus: "futures", tags: "#NinjaTrader #FuturesTrading #OrderFlow #ESFutures #NQFutures #FuturesEducation #ClearPathTrader" },
+    ],
+  },
+  {
+    id: "reddit",
+    label: "Reddit",
+    note: "Education framing only — never meme-pump or broker CTAs",
+    packs: [
+      { name: "r/wallstreetbets", focus: "14.8M members", tags: "#WallStreetBets #WSB #RetailInvestors #MarketEducation #NotFinancialAdvice #ClearPathTrader" },
+      { name: "r/stocks", focus: "7.2M members", tags: "#Stocks #StockMarket #InvestingEducation #EquityMarkets #LongTermInvesting #ClearPathTrader" },
+      { name: "r/Trading", focus: "active traders", tags: "#Trading #TradingCommunity #TechnicalAnalysis #TradingEducation #RiskManagement #ClearPathTrader" },
+    ],
+  },
+  {
+    id: "discord",
+    label: "Discord communities",
+    note: "For social cross-posts that mention or target these rooms",
+    packs: [
+      { name: "Investors Underground", focus: "Discord", tags: "#InvestorsUnderground #DayTradingEducation #SmallCapEducation #ClearPathTrader" },
+      { name: "Warrior Trading", focus: "Discord", tags: "#WarriorTrading #DayTrading #MomentumTrading #TradingEducation #ClearPathTrader" },
+      { name: "Bear Bull Traders", focus: "Discord", tags: "#BearBullTraders #DayTradingCommunity #TradingRoom #ClearPathTrader" },
+      { name: "For Traders", focus: "prop-firm / funded-account focused", tags: "#ForTraders #PropFirm #FundedTrader #PropTradingEducation #RiskRules #ClearPathTrader" },
+      { name: "Bull Trading Community", focus: "Discord", tags: "#BullTradingCommunity #TradingCommunity #MarketEducation #ClearPathTrader" },
+      { name: "Humbled Trader", focus: "Discord", tags: "#HumbledTrader #TradingMindset #RetailTrading #TradingEducation #ClearPathTrader" },
+      { name: "Elite Trading Community", focus: "Discord", tags: "#EliteTradingCommunity #TradingEducation #MarketStructure #ClearPathTrader" },
+      { name: "SMB Capital", focus: "Discord", tags: "#SMBCapital #PropTrading #TradingDesk #ProfessionalTrading #ClearPathTrader" },
+      { name: "HighStrike Trading Room", focus: "Discord", tags: "#HighStrike #OptionsTrading #TradingRoom #OptionsEducation #ClearPathTrader" },
+      { name: "Market Masters", focus: "Discord", tags: "#MarketMasters #TradingCommunity #MarketEducation #ClearPathTrader" },
+      { name: "Disruptive Investments", focus: "Discord", tags: "#DisruptiveInvestments #GrowthInvesting #InvestingEducation #ClearPathTrader" },
+      { name: "FLI Capital", focus: "Discord", tags: "#FLICapital #TradingCommunity #CapitalMarketsEducation #ClearPathTrader" },
+    ],
+  },
+  {
+    id: "sentiment",
+    label: "Sentiment / social",
+    note: "StockTwits + eToro — keep education-only voice",
+    packs: [
+      { name: "StockTwits", focus: "sentiment / social", tags: "#StockTwits #FinTwit #MarketSentiment #StockTalk #TradingIdeas #InvestingEducation #ClearPathTrader #NotABrokerage" },
+      { name: "eToro USA community feed", focus: "social / copy-trading audience", tags: "#eToro #eToroUSA #SocialTrading #CopyTrading #InvestingCommunity #FinancialLiteracy #ClearPathTrader #NotABrokerage" },
+    ],
+  },
+];
+
+function formatCommunityCatalog() {
+  const lines = ["CLEARPATH — READY-TO-GRAB COMMUNITY HASHTAGS", "Education / analytics only. Not a brokerage.", ""];
+  for (const group of COMMUNITY_HASHTAG_GROUPS) {
+    lines.push(`=== ${group.label.toUpperCase()} ===`, group.note, "");
+    for (const pack of group.packs) {
+      lines.push(`${pack.name} (${pack.focus})`, pack.tags, "");
+    }
+  }
+  lines.push("RULES", "- Grab 3–8 tags max per post", "- Always keep #ClearPathTrader + #NotABrokerage on public social", "- Never use pump, signal, or deposit CTAs");
+  return lines.join("\n");
+}
+
+function renderHashtags() {
+  const groupsHtml = COMMUNITY_HASHTAG_GROUPS.map(
+    (group) => `
+      <section class="hash-group">
+        <h3 class="hash-group-title">${group.label}</h3>
+        <p class="hint">${group.note}</p>
+        <div class="hash-grid">
+          ${group.packs
+            .map(
+              (pack) => `
+            <button type="button" class="hash-chip" data-tags="${pack.tags.replace(/"/g, "&quot;")}" data-label="${pack.name}">
+              <span class="hash-chip-name">${pack.name}</span>
+              <span class="hash-chip-focus">${pack.focus}</span>
+              <span class="hash-chip-tags">${pack.tags}</span>
+            </button>`,
+            )
+            .join("")}
+        </div>
+      </section>`,
+  ).join("");
+
+  viewRoot.innerHTML = `
+    <div class="cardcolumn span-all">
+      <div class="card">
+        <header><span class="title">Hashtag generator</span></header>
+        <div class="content composer">
+          <label>Video / post topic
+            <input id="hash-topic" type="text" placeholder="e.g. Reading support without flashing tickers" />
+          </label>
+          <label>Target sector
+            <select id="hash-sector">
+              <option value="data centers">Data centers</option>
+              <option value="AI infrastructure">AI infrastructure</option>
+              <option value="B2B technology">B2B technology</option>
+              <option value="cybersecurity">Cybersecurity</option>
+              <option value="veteran education">Veteran education</option>
+              <option value="neurodivergent learning">Neurodivergent learning</option>
+            </select>
+          </label>
+          <label>Primary keyword
+            <input id="hash-keyword" type="text" placeholder="e.g. accessible trading education" />
+          </label>
+          <div class="queue-actions">
+            <button type="button" class="btn btn-primary" id="btn-hash-gen">Generate hashtags</button>
+            <button type="button" class="btn" id="btn-hash-copy">Copy pack</button>
+            <button type="button" class="btn" id="btn-hash-communities">Copy all community packs</button>
+          </div>
+          <p class="hint hash-status" id="hash-status">Click any community card below to copy its hashtags.</p>
+          <div class="hash-ready">
+            <h3 class="hash-group-title">Ready to grab</h3>
+            ${groupsHtml}
+          </div>
+          <pre class="pkg" id="hash-output">Generate channel-ready hashtag packs, or grab a community set above.</pre>
+        </div>
+      </div>
+    </div>
+  `;
+  const status = document.getElementById("hash-status");
+  const gen = () => {
+    const topic = document.getElementById("hash-topic").value.trim() || "Calm market education";
+    const sector = document.getElementById("hash-sector").value;
+    const keyword = document.getElementById("hash-keyword").value.trim() || topic.toLowerCase();
+    document.getElementById("hash-output").textContent = generateHashtags(topic, sector, keyword);
+  };
+  document.getElementById("btn-hash-gen").addEventListener("click", gen);
+  document.getElementById("btn-hash-copy").addEventListener("click", async () => {
+    const text = document.getElementById("hash-output").textContent;
+    const ok = await copyText(text);
+    status.textContent = ok ? "Hashtag pack copied." : "Clipboard blocked — select the text manually.";
+  });
+  document.getElementById("btn-hash-communities").addEventListener("click", async () => {
+    const ok = await copyText(formatCommunityCatalog());
+    status.textContent = ok ? "Full community catalog copied." : "Clipboard blocked — select manually.";
+  });
+  viewRoot.querySelectorAll(".hash-chip").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const tags = btn.getAttribute("data-tags") || "";
+      const label = btn.getAttribute("data-label") || "pack";
+      const ok = await copyText(tags);
+      status.textContent = ok ? `Copied: ${label}` : "Clipboard blocked — select tags manually.";
+      document.getElementById("hash-output").textContent = `${label}\n${tags}`;
+    });
   });
 }
 
@@ -583,11 +955,13 @@ function render() {
   if (view === "channels") return renderChannels();
   if (view === "analytics") return renderAnalytics();
   if (view === "seo") return renderSeo();
+  if (view === "hashtags") return renderHashtags();
   if (view === "discovery") return renderDiscovery();
   if (view === "mission") return renderMission();
 }
 
-// remove dead renderPublish reference path
 updateClock();
 setInterval(updateClock, 30000);
 render();
+initBackend();
+setInterval(initBackend, 60000);
