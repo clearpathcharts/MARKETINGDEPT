@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Queue — ClearPath Automation Console</title>
+<link rel="stylesheet" href="styles.css">
+<script src="auth.js"></script>
+<script>cpacGuardPage();</script>
+</head>
+<body>
+
+<div class="app">
+  <aside class="sidebar">
+    <div class="side-logo">
+      <div class="logo-mark">CP</div>
+      <div class="logo-text">Automation Console<span>Local build</span></div>
+    </div>
+    <ul class="side-nav">
+      <li><a href="dashboard.html"><span class="nav-dot"></span>Dashboard</a></li>
+      <li><a href="publish.html"><span class="nav-dot"></span>Publish</a></li>
+      <li><a href="queue.html" class="active"><span class="nav-dot"></span>Queue</a></li>
+      <li><a href="channels.html"><span class="nav-dot"></span>Channels</a></li>
+      <li><a href="settings.html"><span class="nav-dot"></span>Settings</a></li>
+    </ul>
+    <div class="side-foot">
+      <button class="logout-btn" onclick="cpacLogout()">Log out</button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="page-head">
+      <div>
+        <h1>Queue</h1>
+        <p>Posts waiting to go out. Approve or clear them here.</p>
+      </div>
+      <button class="btn btn-danger">Clear queue</button>
+    </div>
+
+    <div class="card">
+      <h2>Queued posts</h2>
+      <div class="empty">No jobs yet. Compose one from the Publish page and it'll show up here.</div>
+
+      <!-- Example row layout for when real data is wired in — delete once connected:
+      <div class="list-row">
+        <div>Calm lesson: support levels</div>
+        <span class="tag">Scheduled</span>
+      </div>
+      -->
+    </div>
+  </main>
+</div>
+
+</body>
+</html>

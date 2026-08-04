@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Channels — ClearPath Automation Console</title>
+<link rel="stylesheet" href="styles.css">
+<script src="auth.js"></script>
+<script>cpacGuardPage();</script>
+</head>
+<body>
+
+<div class="app">
+  <aside class="sidebar">
+    <div class="side-logo">
+      <div class="logo-mark">CP</div>
+      <div class="logo-text">Automation Console<span>Local build</span></div>
+    </div>
+    <ul class="side-nav">
+      <li><a href="dashboard.html"><span class="nav-dot"></span>Dashboard</a></li>
+      <li><a href="publish.html"><span class="nav-dot"></span>Publish</a></li>
+      <li><a href="queue.html"><span class="nav-dot"></span>Queue</a></li>
+      <li><a href="channels.html" class="active"><span class="nav-dot"></span>Channels</a></li>
+      <li><a href="settings.html"><span class="nav-dot"></span>Settings</a></li>
+    </ul>
+    <div class="side-foot">
+      <button class="logout-btn" onclick="cpacLogout()">Log out</button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="page-head">
+      <div>
+        <h1>Channels</h1>
+        <p>Which accounts this console can post to. None connected yet — skeleton only.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Available channels</h2>
+      <div class="pill-grid">
+        <div class="pill"><span class="status-dot"></span>Facebook</div>
+        <div class="pill"><span class="status-dot"></span>YouTube</div>
+        <div class="pill"><span class="status-dot"></span>WhatsApp</div>
+        <div class="pill"><span class="status-dot"></span>Instagram</div>
+        <div class="pill"><span class="status-dot"></span>WeChat</div>
+        <div class="pill"><span class="status-dot"></span>TikTok</div>
+        <div class="pill"><span class="status-dot"></span>Douyin</div>
+        <div class="pill"><span class="status-dot"></span>Reddit</div>
+        <div class="pill"><span class="status-dot"></span>Snapchat</div>
+        <div class="pill"><span class="status-dot"></span>LinkedIn</div>
+        <div class="pill"><span class="status-dot"></span>Lemon8</div>
+        <div class="pill"><span class="status-dot"></span>Mastodon</div>
+        <div class="pill"><span class="status-dot"></span>Telegram</div>
+        <div class="pill"><span class="status-dot"></span>Discord</div>
+      </div>
+      <p style="color:var(--dim); font-size:12.5px; margin-top:20px;">
+        A filled-in dot means connected. Right now every dot is empty because no accounts are wired up yet — that's the next build step, one channel at a time.
+      </p>
+    </div>
+  </main>
+</div>
+
+</body>
+</html>

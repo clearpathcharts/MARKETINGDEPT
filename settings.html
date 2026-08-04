@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Settings — ClearPath Automation Console</title>
+<link rel="stylesheet" href="styles.css">
+<script src="auth.js"></script>
+<script>cpacGuardPage();</script>
+</head>
+<body>
+
+<div class="app">
+  <aside class="sidebar">
+    <div class="side-logo">
+      <div class="logo-mark">CP</div>
+      <div class="logo-text">Automation Console<span>Local build</span></div>
+    </div>
+    <ul class="side-nav">
+      <li><a href="dashboard.html"><span class="nav-dot"></span>Dashboard</a></li>
+      <li><a href="publish.html"><span class="nav-dot"></span>Publish</a></li>
+      <li><a href="queue.html"><span class="nav-dot"></span>Queue</a></li>
+      <li><a href="channels.html"><span class="nav-dot"></span>Channels</a></li>
+      <li><a href="settings.html" class="active"><span class="nav-dot"></span>Settings</a></li>
+    </ul>
+    <div class="side-foot">
+      <button class="logout-btn" onclick="cpacLogout()">Log out</button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="page-head">
+      <div>
+        <h1>Settings</h1>
+        <p>Console-level settings. Changing these means editing the files directly — nothing here saves from the browser yet.</p>
+      </div>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <h2>Login password</h2>
+        <p style="color:var(--dim); font-size:13px; margin-top:0;">To change your password:</p>
+        <ol style="margin:0 0 4px; padding-left:18px; color:var(--dim); font-size:13.5px; line-height:1.9;">
+          <li>Open <code>auth.js</code> in a text editor</li>
+          <li>Find the line that starts with <code>APP_PASSWORD</code></li>
+          <li>Replace the text between the quotes</li>
+          <li>Save the file</li>
+        </ol>
+      </div>
+
+      <div class="card">
+        <h2>Session length</h2>
+        <p style="color:var(--dim); font-size:13px; margin-top:0;">How long you stay logged in before it asks for the password again. Currently set to 12 hours in <code>auth.js</code> (<code>SESSION_HOURS</code>).</p>
+      </div>
+
+      <div class="card">
+        <h2>Backend connection</h2>
+        <label for="backend-url">Backend URL (not wired up yet)</label>
+        <input type="text" id="backend-url" placeholder="http://localhost:3000">
+        <p style="color:var(--dim); font-size:12.5px; margin-top:-8px;">This is a placeholder field for when the Publish, Queue, and Channels pages connect to a real local server.</p>
+      </div>
+
+      <div class="card">
+        <h2>About this skeleton</h2>
+        <p style="color:var(--dim); font-size:13px; margin:0;">Five pages, one shared style sheet, one login gate. No backend, no database — just the structure to build the real automation console into, one page at a time.</p>
+      </div>
+    </div>
+  </main>
+</div>
+
+</body>
+</html>

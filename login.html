@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sign in — ClearPath Automation Console</title>
+<link rel="stylesheet" href="styles.css">
+<script src="auth.js"></script>
+</head>
+<body>
+
+<div class="login-wrap">
+  <div class="login-card">
+    <div class="logo-mark">CP</div>
+    <h1>ClearPath Automation Console</h1>
+    <p class="sub">Private tool. Enter your password to continue.</p>
+
+    <form id="login-form" onsubmit="return handleLogin(event)">
+      <label for="password">Password</label>
+      <input type="password" id="password" placeholder="Enter password" autofocus required>
+      <div class="error-msg" id="error-msg">That password isn't right. Try again.</div>
+      <button type="submit" class="btn btn-primary btn-block">Unlock console</button>
+    </form>
+
+    <p class="hint">STEP 1: Open auth.js in a text editor.<br>STEP 2: Change APP_PASSWORD to your own password.<br>STEP 3: Save the file and come back here.</p>
+  </div>
+</div>
+
+<script>
+  // If already logged in, skip straight to the dashboard.
+  if (cpacIsLoggedIn()) {
+    window.location.href = "dashboard.html";
+  }
+
+  function handleLogin(e) {
+    e.preventDefault();
+    const pw = document.getElementById("password").value;
+    const ok = cpacLogin(pw);
+    if (ok) {
+      window.location.href = "dashboard.html";
+    } else {
+      document.getElementById("error-msg").classList.add("show");
+    }
+    return false;
+  }
+</script>
+
+</body>
+</html>

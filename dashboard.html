@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — ClearPath Automation Console</title>
+<link rel="stylesheet" href="styles.css">
+<script src="auth.js"></script>
+<script>cpacGuardPage();</script>
+</head>
+<body>
+
+<div class="app">
+  <aside class="sidebar">
+    <div class="side-logo">
+      <div class="logo-mark">CP</div>
+      <div class="logo-text">Automation Console<span>Local build</span></div>
+    </div>
+    <ul class="side-nav">
+      <li><a href="dashboard.html" class="active"><span class="nav-dot"></span>Dashboard</a></li>
+      <li><a href="publish.html"><span class="nav-dot"></span>Publish</a></li>
+      <li><a href="queue.html"><span class="nav-dot"></span>Queue</a></li>
+      <li><a href="channels.html"><span class="nav-dot"></span>Channels</a></li>
+      <li><a href="settings.html"><span class="nav-dot"></span>Settings</a></li>
+    </ul>
+    <div class="side-foot">
+      <button class="logout-btn" onclick="cpacLogout()">Log out</button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="page-head">
+      <div>
+        <h1>Dashboard</h1>
+        <p>Everything at a glance. Nothing wired up yet — this is the skeleton.</p>
+      </div>
+      <a href="publish.html" class="btn btn-primary">+ New post</a>
+    </div>
+
+    <div class="grid grid-3" style="margin-bottom:20px;">
+      <div class="card stat">
+        <div class="n">0</div>
+        <div class="l">Queued</div>
+      </div>
+      <div class="card stat">
+        <div class="n">0</div>
+        <div class="l">Ready</div>
+      </div>
+      <div class="card stat">
+        <div class="n">0</div>
+        <div class="l">Channels connected</div>
+      </div>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <h2>Latest in queue</h2>
+        <div class="empty">No jobs yet. Add one from the Publish page.</div>
+      </div>
+      <div class="card">
+        <h2>Quick actions</h2>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          <a href="publish.html" class="btn btn-ghost btn-block">Compose a new post</a>
+          <a href="channels.html" class="btn btn-ghost btn-block">Manage channels</a>
+          <a href="queue.html" class="btn btn-ghost btn-block">View full queue</a>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+</body>
+</html>
